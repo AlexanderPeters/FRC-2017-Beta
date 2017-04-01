@@ -118,6 +118,9 @@ public interface Constants {
 	public final double bearingToGoalTolerance = 2;
 	public final double cameraHeightAboveGround = 23/12;//ft
 	public final int cameraAngle = 45;
+	//Driver Alert
+	public final double alertOnTime = 0.1;//sec
+	public final double alertOffTime = 0.1;//sec
 	
 	/****************
 	 * DEVICE PORTS *
