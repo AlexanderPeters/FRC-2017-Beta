@@ -125,7 +125,8 @@ public interface Constants {
 	// JOYSTICKS (USB)
 	public final int Xbox_Port = 0;
 	// DIGITAL IO
-	public final int Shooter_Switch = 0;
+	public final int GearMech_Switch = 0;
+	public final int DriverAlert_DigiOut = 1;
 	// TALON SRX'S (CAN BUS)
 	public final int LEFT_Drive_Master = 2;
 	public final int LEFT_Drive_Slave1 = 3;

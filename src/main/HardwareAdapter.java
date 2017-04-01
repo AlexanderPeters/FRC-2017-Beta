@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Spark;
+import edu.wpi.first.wpilibj.DigitalOutput;
 import lib.joystick.XboxController;
 
 public interface HardwareAdapter {
@@ -26,7 +27,7 @@ public interface HardwareAdapter {
 	//Shooter
 	public static CANTalon shooter = new CANTalon(Constants.Shooter_Flywheel);
 	public static Servo hoodServo = new Servo(Constants.Shooter_Hood);
-	public static DigitalInput hoodSwitch = new DigitalInput(Constants.Shooter_Switch);
+	public static DigitalInput gearSwitch = new DigitalInput(Constants.GearMech_Switch);
 	public static Servo shooterIndexer = new Servo(Constants.Shooter_Indexer);
 	
 	//Climber
@@ -44,6 +45,9 @@ public interface HardwareAdapter {
 	public static DoubleSolenoid shifter = new DoubleSolenoid(Constants.PCM_Port, Constants.SHIFTER_EXT, Constants.SHIFTER_RET);
 	public static DoubleSolenoid gearMech = new DoubleSolenoid(Constants.PCM_Port, Constants.GEAR_EXT, Constants.GEAR_RET);
 	public static Compressor comp = new Compressor(Constants.PCM_Port);
+	
+	//Driver Alert
+	public static DigitalOutput alertRelay = new DigitalOutput(Constants.DriverAlert_DigiOut);
 	
 	//PDP
 	public static PowerDistributionPanel pdp = new PowerDistributionPanel(Constants.PDP_Port);

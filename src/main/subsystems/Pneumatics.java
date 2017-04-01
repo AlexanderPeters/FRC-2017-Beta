@@ -17,11 +17,8 @@ public class Pneumatics extends Subsystem implements Constants, HardwareAdapter 
 		shifter.set(OFF);
 		gearMech.set(EXT);
 		gearMech.set(OFF);
-
-
 	}
 	
-
 	/*******************
 	 * COMMAND METHODS *
 	 *******************/

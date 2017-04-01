@@ -20,10 +20,10 @@ import main.commands.auto.shootingAutoRedAlliance;
 import main.subsystems.Climber;
 import main.subsystems.DriveCamera;
 import main.subsystems.DriveTrain;
+import main.subsystems.DriverAlerts;
 import main.subsystems.FlyWheel;
-import main.subsystems.Hood;
-import main.subsystems.Indexer;
 import main.subsystems.Intake;
+import main.subsystems.OtherSensors;
 import main.subsystems.Pneumatics;
 import main.subsystems.Stirrer;
 
@@ -49,10 +49,10 @@ public class Robot extends IterativeRobot implements Constants{
 	public static Intake in;
 	public static Stirrer str;
 	public static FlyWheel shooter;
-	public static Hood hd;
-	public static Indexer id;
 	public static DriveCamera dc;
 	public static SmartDashboardInteractions sdb;
+	public static OtherSensors sensors;
+	public static DriverAlerts da;
 	public static GameState gameState;
 	public static RobotState robotState = RobotState.Neither;
 	//    public static Looper mEnabledLooper = new Looper(kEnabledLooperDt);
@@ -76,10 +76,10 @@ public class Robot extends IterativeRobot implements Constants{
 		dt = new DriveTrain();
 		cl = new Climber();
 		in = new Intake();
-		id = new Indexer();
 		shooter = new FlyWheel();
-		hd = new Hood();
 		dc = new DriveCamera();
+		sensors = new OtherSensors();
+		da = new DriverAlerts();
 		//This has to be last as the subsystems can not be null when a command requires them
 		oi = new OI();
 
