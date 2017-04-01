@@ -116,6 +116,9 @@ public class Robot extends IterativeRobot implements Constants{
         SmartDashboard.putDouble("Distance Tolerance", kToleranceDisplacementDefault);
         SmartDashboard.putDouble("Distance MaxVoltage", kMaxVoltageDisp);
         
+        SmartDashboard.putDouble("Throttle Voltage", 0.0);
+        SmartDashboard.putDouble("Bearing Voltage", 0.0);
+        
         //displayVisionStatus();
 
 

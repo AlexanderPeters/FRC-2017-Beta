@@ -258,7 +258,8 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 	}
 	
 	private void sendDriveBaseDataOverUDP() {
-		String data = getDistanceTraveledLeft() + ", " + getDistanceTraveledRight() + ", " + NavX.getYaw() + ", " + System.currentTimeMillis();
+		String data = System.currentTimeMillis() + ", " + leftDriveMaster.getOutputVoltage() + ", " + rightDriveMaster.getOutputVoltage() 
+		 + ", " + getDistanceTraveledLeft() + ", " + getDistanceTraveledRight() + ", " + NavX.getYaw();
 		sendData = data.getBytes();
 		try {
 			sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(kangarooIP), udpPort);

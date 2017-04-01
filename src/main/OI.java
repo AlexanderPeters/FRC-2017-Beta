@@ -1,9 +1,12 @@
 package main;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import lib.joystick.XboxController;
 import main.commands.climber.WinchForward;
 import main.commands.climber.WinchOff;
+import main.commands.drivetrain.Drive;
 import main.commands.drivetrain.DriveDistance;
+import main.commands.drivetrain.DrivePercentage;
 import main.commands.drivetrain.Target;
 import main.commands.drivetrain.TurnToAngle;
 import main.commands.gearmech.GearDown;
@@ -33,6 +36,7 @@ public class OI implements Constants, HardwareAdapter {
 		return xbox;
 	}
 
+	@SuppressWarnings("deprecation")
 	public void check(){
 		xbox.leftBumper.whenPressed(new ShiftUp());
 		xbox.leftBumper.whenReleased(new ShiftDown());
@@ -45,6 +49,10 @@ public class OI implements Constants, HardwareAdapter {
 		
 		//xbox.leftTrigger.whenPressed(new TurnToAngle(mmm));
 		xbox.select.whenPressed(new DriveDistance(3, kToleranceDisplacementDefault));
+		xbox.leftTrigger.whileHeld(new Drive());
+		double throttle = SmartDashboard.getDouble("Throttle Voltage", 0.0);
+		double bearing = SmartDashboard.getDouble("Bearing Voltage", 0.0);
+		xbox.leftJoystickButton.whenReleased(new DrivePercentage(throttle, bearing));
 		//xbox.leftTrigger.whenPressed(new Target());
 		
 		xbox.a.whileHeld(new IntakeForward());

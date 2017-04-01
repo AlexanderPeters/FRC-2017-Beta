@@ -78,12 +78,10 @@ public interface Constants {
 	 *************/
 	//DOH
 	public final String DOH = "DOH!";
-	
 	//Loop Time
 	public final double kEnabledLooperDt = 0.01;
 	public final double kLooperDt = 0.01;
 	public final double kAutoLooperDt = 0.1;
-	
 	// DEFAULT TALON MODES
 	public final TalonControlMode DEFAULT_CTRL_MODE = TalonControlMode.PercentVbus;
 	public final boolean DEFAULT_BRAKE_MODE = true;
@@ -120,8 +118,6 @@ public interface Constants {
 	public final double bearingToGoalTolerance = 2;
 	public final double cameraHeightAboveGround = 23/12;//ft
 	public final int cameraAngle = 45;
-	
-	
 	
 	/****************
 	 * DEVICE PORTS *
