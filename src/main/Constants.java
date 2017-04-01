@@ -103,6 +103,7 @@ public interface Constants {
 	public final DoubleSolenoid.Value OFF = Value.kOff;
 	//UDP_PORT
 	public final int udpPort = 5803;
+	public final String kangarooIP = "172.22.11.2";//Example ip
 	//DRIVERCAM_FPS
 	public final int fps = 30;
 	//WHEEL_SIZE

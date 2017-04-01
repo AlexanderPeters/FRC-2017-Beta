@@ -1,5 +1,12 @@
 package main.subsystems;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+
 import com.ctre.CANTalon.FeedbackDevice;
 import com.ctre.CANTalon.TalonControlMode;
 import com.kauailabs.navx.frc.AHRS;//NavX import
@@ -28,31 +35,50 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 	private PIDController smallTurnController;
 	private PIDController bigTurnController;
 	private PIDController distanceController;
-	
+	public DatagramSocket serverSocket;
+	public byte[] sendData;
+	public DatagramPacket sendPacket;
+
 	public DriveTrain() {
 		setTalonDefaults();
 		try {
-	          /* Communicate w/navX-MXP via the MXP SPI Bus.                                     */
-	          /* Alternatively:  I2C.Port.kMXP, SerialPort.Port.kMXP or SerialPort.Port.kUSB     */
-	          /* See http://navx-mxp.kauailabs.com/guidance/selecting-an-interface/ for details. */
-	          NavX = new AHRS(SPI.Port.kMXP); 
-	      } catch (RuntimeException ex ) {
-	          DriverStation.reportError("Error instantiating navX-MXP:  " + ex.getMessage(), true);
-	      }
-		resetSensors();//Must happen after NavX is instantiated!
-		
-		smallTurnController = new PIDController(turnInPlaceKPSmallAngle, turnInPlaceKISmallAngle, turnInPlaceKDSmallAngle, NavX, new PIDOutput() {
-			public void pidWrite(double d) {
-				smallTurnControllerRate = d + (kMinVoltageTurnSmallAngle*Math.signum(d))/10;
-			}
-		});
-		
-		bigTurnController = new PIDController(turnInPlaceKPBigAngle, turnInPlaceKIBigAngle, turnInPlaceKDBigAngle, NavX, new PIDOutput() {
-			public void pidWrite(double d) {
-				bigTurnControllerRate = d + (kMinVoltageTurnBigAngle*Math.signum(d))/10;
-			}
-		});
-		
+			serverSocket = new DatagramSocket(udpPort);
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		try {
+			/* Communicate w/navX-MXP via the MXP SPI Bus. */
+			/*
+			 * Alternatively: I2C.Port.kMXP, SerialPort.Port.kMXP or
+			 * SerialPort.Port.kUSB
+			 */
+			/*
+			 * See
+			 * http://navx-mxp.kauailabs.com/guidance/selecting-an-interface/
+			 * for details.
+			 */
+			NavX = new AHRS(SPI.Port.kMXP);
+		} catch (RuntimeException ex) {
+			DriverStation.reportError("Error instantiating navX-MXP:  " + ex.getMessage(), true);
+		}
+		resetSensors();// Must happen after NavX is instantiated!
+
+		smallTurnController = new PIDController(turnInPlaceKPSmallAngle, turnInPlaceKISmallAngle,
+				turnInPlaceKDSmallAngle, NavX, new PIDOutput() {
+					public void pidWrite(double d) {
+						smallTurnControllerRate = d + (kMinVoltageTurnSmallAngle * Math.signum(d)) / 10;
+					}
+				});
+
+		bigTurnController = new PIDController(turnInPlaceKPBigAngle, turnInPlaceKIBigAngle, turnInPlaceKDBigAngle, NavX,
+				new PIDOutput() {
+					public void pidWrite(double d) {
+						bigTurnControllerRate = d + (kMinVoltageTurnBigAngle * Math.signum(d)) / 10;
+					}
+				});
+
 		distanceController = new PIDController(displacementKP, displacementKI, displacementKD, new PIDSource() {
 			PIDSourceType m_sourceType = PIDSourceType.kDisplacement;
 
@@ -67,19 +93,21 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 			public PIDSourceType getPIDSourceType() {
 				return m_sourceType;
 			}
-		}, new PIDOutput() {public void pidWrite(double d) {
-			distanceControllerRate = d;
-		}
-	});
-		
-		
+		}, new PIDOutput() {
+			public void pidWrite(double d) {
+				distanceControllerRate = d;
+			}
+		});
+
 	}
+	
 	public void driveVelocity(double throttle, double heading) {
 		if(Robot.gameState == Robot.GameState.Autonomous || Robot.gameState == Robot.GameState.Teleop) 
 			driveTrain.arcadeDrive(throttle, heading); 
 		updateRobotState();
+		sendDriveBaseDataOverUDP();
 	}
-
+	
 	public void driveStraight(double throttle) {
 		double theta = NavX.getYaw();
 		if(Math.signum(throttle) > 0) {
@@ -91,12 +119,14 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 			driveTrain.arcadeDrive(helper.handleOverPower(throttle), helper.handleOverPower(theta * straightLineKPReverse)); 
 		}
 		updateRobotState();
-				
+		sendDriveBaseDataOverUDP();
 	}
+	
 	public void driveDistanceSetPID(double p, double i, double d, double maxV) {
 		distanceController.setPID(p, i, d);
 		distanceController.setOutputRange(-maxV/10, maxV/10);
 	}
+	
 	public void driveDistance(double distance, double tolerance) {
 		if(highGearState)
 			new ShiftDown();
@@ -112,8 +142,10 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		//System.out.println("r" + distanceControllerRate);
 		this.driveVelocity(distanceControllerRate, 0.0);//Gyro code in drive straight I think is messed up
 		updateRobotState();
-			
+		sendDriveBaseDataOverUDP();
+		
 	}
+	
 	public void turnToBigAngleSetPID(double p, double i, double d, double maxV) {
 		@SuppressWarnings("deprecation")
 		double minVoltage = 5.5;//SmartDashboard.getDouble("Turning MinVoltage Big Angle", 0.0);
@@ -122,7 +154,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		System.out.println(-(maxV-minVoltage)/10 + " " + (maxV-minVoltage)/10);
 		bigTurnController.setOutputRange(-(maxV-minVoltage)/10, (maxV-minVoltage)/10);
 	}
-			
+	
 	public void turnToBigAngle(double heading, double tolerance) {
 		if(highGearState)
 			new ShiftDown();
@@ -136,6 +168,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		bigTurnController.setSetpoint(heading);
 		this.driveVelocity(0.0, bigTurnControllerRate);
 		updateRobotState();
+		sendDriveBaseDataOverUDP();
 	}
 	
 	public void turnToSmallAngleSetPID(double p, double i, double d, double maxV) {
@@ -147,7 +180,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 
 		smallTurnController.setOutputRange(-(maxV-minVoltage)/10, (maxV-minVoltage)/10);
 	}
-			
+	
 	public void turnToSmallAngle(double heading, double tolerance) {
 		if(highGearState)
 			new ShiftDown();
@@ -161,6 +194,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		smallTurnController.setSetpoint(heading);
 		this.driveVelocity(0.0, smallTurnControllerRate);
 		updateRobotState();
+		sendDriveBaseDataOverUDP();
 	}
 	
 	public double getDistanceAvg() {
@@ -178,6 +212,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 	public int convertToEncoderTicks(double displacement) {//ft
 		return (int) (((displacement / (wheelSize*Math.PI)) * conversionFactor));
 	}
+	
 	public double getDistanceTraveledLeft() {//Feet
 		return wheelSize*Math.PI*(getLeftEncoderPosition()/conversionFactor);
 	}
@@ -206,6 +241,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		leftDriveMaster.setPosition(0);
 		rightDriveMaster.setPosition(0);
 	}
+	
 	public void resetSensors() {
 		resetGyro();
 		resetEncoders();
@@ -220,6 +256,24 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 				&& Robot.robotState != Robot.RobotState.Climbing)	
 			Robot.robotState = Robot.RobotState.Neither;
 	}
+	
+	private void sendDriveBaseDataOverUDP() {
+		String data = getDistanceTraveledLeft() + ", " + getDistanceTraveledRight() + ", " + NavX.getYaw() + ", " + System.currentTimeMillis();
+		sendData = data.getBytes();
+		try {
+			sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(kangarooIP), udpPort);
+		} catch (UnknownHostException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			serverSocket.send(sendPacket);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	private double getLeftEncoderPosition() {
 		return leftDriveMaster.getEncPosition();
 	}
@@ -269,7 +323,6 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		rightDriveSlave1.set(rightDriveMaster.getDeviceID());
 		//rightDriveSlave2.changeControlMode(SLAVE_MODE);
 		//rightDriveSlave2.set(rightDriveMaster.getDeviceID());
-		
 	}
 	
 	/**
