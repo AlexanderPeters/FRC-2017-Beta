@@ -17,6 +17,8 @@ public class Pneumatics extends Subsystem implements Constants, HardwareAdapter 
 		shifter.set(OFF);
 		gearMech.set(EXT);
 		gearMech.set(OFF);
+		shootDoor.set(RET);
+		shootDoor.set(OFF);
 	}
 	
 	/*******************
@@ -37,15 +39,22 @@ public class Pneumatics extends Subsystem implements Constants, HardwareAdapter 
 		down = !down;
 		gearMech.set(v);
 	}
+	
 	public boolean getDown() {
 		return down;
 	}
+	
 	public void shiftGearMech() {
 		if(down)
 			gearMech.set(RET);
 		else
 			gearMech.set(EXT);
+		down = !down;
 		gearMech.set(OFF);
+	}
+	
+	public void shiftShootDoor(DoubleSolenoid.Value v) {
+		shootDoor.set(v);
 	}
 	
 	/**

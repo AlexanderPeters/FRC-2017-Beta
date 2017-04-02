@@ -130,9 +130,10 @@ public interface Constants {
 	// JOYSTICKS (USB)
 	public final int Xbox_Port = 0;
 	// DIGITAL IO
-	public final int GearMech_Switch = 0;
+	public final int HasGear_Switch = 0;
 	public final int Intake_Switch = 1;
-	public final int DriverAlert_DigiOut = 2;
+	public final int ShootProx_Switch = 2;
+	public final int DriverAlert_DigiOut = 3;
 	// TALON SRX'S (CAN BUS)
 	public final int LEFT_Drive_Master = 2;
 	public final int LEFT_Drive_Slave1 = 3;
@@ -146,6 +147,8 @@ public interface Constants {
 	public final int Climber_Motor = 2;
 	public final int Stirrer_Motor = 1;
 	// PNEUMATICS (PCM)
+	public final int HOOD_EXT = 0;
+	public final int HOOD_RET = 1;
 	public final int GEAR_EXT = 2;//Currently in by default
 	public final int GEAR_RET = 5;
 	public final int SHIFTER_EXT = 6;//(isCompRobot? 6:3);
