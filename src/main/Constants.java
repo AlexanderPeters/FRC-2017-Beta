@@ -121,6 +121,8 @@ public interface Constants {
 	//Driver Alert
 	public final double alertOnTime = 0.1;//sec
 	public final double alertOffTime = 0.1;//sec
+	//Intake
+	public final double intakeOnTime = 2.0;//sec
 	
 	/****************
 	 * DEVICE PORTS *
@@ -129,7 +131,8 @@ public interface Constants {
 	public final int Xbox_Port = 0;
 	// DIGITAL IO
 	public final int GearMech_Switch = 0;
-	public final int DriverAlert_DigiOut = 1;
+	public final int Intake_Switch = 1;
+	public final int DriverAlert_DigiOut = 2;
 	// TALON SRX'S (CAN BUS)
 	public final int LEFT_Drive_Master = 2;
 	public final int LEFT_Drive_Slave1 = 3;
@@ -142,10 +145,6 @@ public interface Constants {
 	public final int Intake_Motor = 0;
 	public final int Climber_Motor = 2;
 	public final int Stirrer_Motor = 1;
-	public final int Shooter_Hood = 3;
-	//public final int LEFT_Climber_Intake = 4;
-	//public final int RIGHT_Climber_Intake = 5;
-	public final int Shooter_Indexer = 6;
 	// PNEUMATICS (PCM)
 	public final int GEAR_EXT = 2;//Currently in by default
 	public final int GEAR_RET = 5;

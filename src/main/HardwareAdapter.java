@@ -25,25 +25,24 @@ public interface HardwareAdapter {
 	//public static CANTalon rightDriveSlave2 = new CANTalon(Constants.RIGHT_Drive_Slave2);
 	
 	//Shooter
-	public static CANTalon shooter = new CANTalon(Constants.Shooter_Flywheel);
-	public static Servo hoodServo = new Servo(Constants.Shooter_Hood);
-	public static DigitalInput gearSwitch = new DigitalInput(Constants.GearMech_Switch);
-	public static Servo shooterIndexer = new Servo(Constants.Shooter_Indexer);
+	public static CANTalon flyWheel = new CANTalon(Constants.Shooter_Flywheel);
 	
 	//Climber
 	public static Spark climberMotor = new Spark(Constants.Climber_Motor);
-	//public static Servo climberLeft = new Servo(Constants.LEFT_Climber_Intake);
-	//public static Servo climberRight = new Servo(Constants.RIGHT_Climber_Intake);
 	
 	//Intake
 	public static Spark intakeMotor = new Spark(Constants.Intake_Motor);
+	public static DigitalInput intakeSwitch = new DigitalInput(Constants.Intake_Switch);
 	
 	//Stirrer
 	public static Spark stirrerMotor = new Spark(Constants.Stirrer_Motor);
 	
-	//Pnuematics
-	public static DoubleSolenoid shifter = new DoubleSolenoid(Constants.PCM_Port, Constants.SHIFTER_EXT, Constants.SHIFTER_RET);
+	//GearMech
 	public static DoubleSolenoid gearMech = new DoubleSolenoid(Constants.PCM_Port, Constants.GEAR_EXT, Constants.GEAR_RET);
+	public static DigitalInput gearSwitch = new DigitalInput(Constants.GearMech_Switch);
+
+	//Other Pnuematics
+	public static DoubleSolenoid shifter = new DoubleSolenoid(Constants.PCM_Port, Constants.SHIFTER_EXT, Constants.SHIFTER_RET);
 	public static Compressor comp = new Compressor(Constants.PCM_Port);
 	
 	//Driver Alert
