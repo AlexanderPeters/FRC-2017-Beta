@@ -49,10 +49,10 @@ public class OI implements Constants, HardwareAdapter {
 		
 		//xbox.leftTrigger.whenPressed(new TurnToAngle(mmm));
 		xbox.select.whenPressed(new DriveDistance(3, kToleranceDisplacementDefault));
-		xbox.leftTrigger.whileHeld(new Drive());
 		double throttle = SmartDashboard.getDouble("Throttle Voltage", 0.0);
 		double bearing = SmartDashboard.getDouble("Bearing Voltage", 0.0);
-		xbox.leftJoystickButton.whenReleased(new DrivePercentage(throttle, bearing));
+		xbox.leftTrigger.whileHeld(new DrivePercentage(throttle, bearing));
+		xbox.leftTrigger.whenReleased(new DrivePercentage(0.0, 0.0));
 		//xbox.leftTrigger.whenPressed(new Target());
 		
 		xbox.a.whileHeld(new IntakeForward());
