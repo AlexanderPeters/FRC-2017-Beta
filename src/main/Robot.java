@@ -1,6 +1,7 @@
 package main;
 
 import Util.SmartDashboardInteractions;
+import controllers.StateCheckController;
 import controllers.UDPController;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
@@ -56,7 +57,7 @@ public class Robot extends IterativeRobot implements Constants{
 	public static GameState gameState;
 	public static RobotState robotState = RobotState.Neither;
 	//    public static Looper mEnabledLooper = new Looper(kEnabledLooperDt);
-    public static Looper mLooper = new Looper(kLooperDt);
+    public static Looper mLooper1 = new Looper(kLooperDt);
     public static UDPForVision comms = new UDPForVision();
 	
     Command autoCommand;
@@ -78,14 +79,15 @@ public class Robot extends IterativeRobot implements Constants{
 		in = new Intake();
 		shooter = new FlyWheel();
 		dc = new DriveCamera();
+		da = new DriverAlerts();//Must be initialized before OtherSensors which uses it by calling commands
 		sensors = new OtherSensors();
-		da = new DriverAlerts();
 		//This has to be last as the subsystems can not be null when a command requires them
 		oi = new OI();
 
 		//mEnabledLooper.register(new UDPController());
-		mLooper.register(new UDPController());
-		mLooper.start();
+		mLooper1.register(new UDPController());
+		//mLooper1.register(new StateCheckController());
+		mLooper1.start();
     
 		chooser = new SendableChooser<Command>();
         chooser.addDefault("Do Nothing Auto", new doNothing());
@@ -215,6 +217,7 @@ public class Robot extends IterativeRobot implements Constants{
      */
     public void teleopPeriodic() {
     	gameState = GameState.Teleop;
+    	sensors.check();
         //displayVisionStatus();
         //System.out.println("GameState " + gameState + "Robot State " + robotState);
     	Scheduler.getInstance().run();

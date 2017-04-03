@@ -105,7 +105,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		if(Robot.gameState == Robot.GameState.Autonomous || Robot.gameState == Robot.GameState.Teleop) 
 			driveTrain.arcadeDrive(throttle, heading); 
 		updateRobotState();
-		sendDriveBaseDataOverUDP();
+		//sendDriveBaseOverUDP();
 	}
 	
 	public void driveStraight(double throttle) {
@@ -119,7 +119,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 			driveTrain.arcadeDrive(helper.handleOverPower(throttle), helper.handleOverPower(theta * straightLineKPReverse)); 
 		}
 		updateRobotState();
-		sendDriveBaseDataOverUDP();
+		//sendDriveBaseOverUDP();
 	}
 	
 	public void driveDistanceSetPID(double p, double i, double d, double maxV) {
@@ -142,7 +142,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		//System.out.println("r" + distanceControllerRate);
 		this.driveVelocity(distanceControllerRate, 0.0);//Gyro code in drive straight I think is messed up
 		updateRobotState();
-		sendDriveBaseDataOverUDP();
+		//sendDriveBaseOverUDP();
 		
 	}
 	
@@ -168,7 +168,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		bigTurnController.setSetpoint(heading);
 		this.driveVelocity(0.0, bigTurnControllerRate);
 		updateRobotState();
-		sendDriveBaseDataOverUDP();
+		//sendDriveBaseOverUDP();
 	}
 	
 	public void turnToSmallAngleSetPID(double p, double i, double d, double maxV) {
@@ -194,7 +194,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		smallTurnController.setSetpoint(heading);
 		this.driveVelocity(0.0, smallTurnControllerRate);
 		updateRobotState();
-		sendDriveBaseDataOverUDP();
+		//sendDriveBaseOverUDP();
 	}
 	
 	public double getDistanceAvg() {

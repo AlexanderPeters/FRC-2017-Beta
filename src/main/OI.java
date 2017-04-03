@@ -37,7 +37,7 @@ public class OI implements Constants, HardwareAdapter {
 	}
 
 	@SuppressWarnings("deprecation")
-	public void check(){
+	private void check(){
 		xbox.leftBumper.whenPressed(new ShiftUp());
 		xbox.leftBumper.whenReleased(new ShiftDown());
 		xbox.rightBumper.whenPressed(new GearDown());
