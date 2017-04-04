@@ -6,7 +6,7 @@ import main.Constants;
 
 public class AlertDriver extends CommandGroup implements Constants {
 	public AlertDriver() {// Utilize pulseAlertLight method to simplify this.
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 4; i++) {
 			addSequential(new AlertLightOnForTime(alertOnTime));
 			addSequential(new WaitCommand(alertOffTime));
 		}

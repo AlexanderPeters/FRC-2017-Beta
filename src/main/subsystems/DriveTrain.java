@@ -35,18 +35,18 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 	private PIDController smallTurnController;
 	private PIDController bigTurnController;
 	private PIDController distanceController;
-	public DatagramSocket serverSocket;
-	public byte[] sendData;
-	public DatagramPacket sendPacket;
+	//private DatagramSocket serverSocket;
+	//private byte[] sendData;
+	//private  DatagramPacket sendPacket;
 
 	public DriveTrain() {
 		setTalonDefaults();
-		try {
-			serverSocket = new DatagramSocket(udpPort);
-		} catch (SocketException e) {
+		//try {
+			//serverSocket = new DatagramSocket(udpPort);
+		//} catch (SocketException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			//e.printStackTrace();
+		//}
 
 		try {
 			/* Communicate w/navX-MXP via the MXP SPI Bus. */
@@ -105,7 +105,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		if(Robot.gameState == Robot.GameState.Autonomous || Robot.gameState == Robot.GameState.Teleop) 
 			driveTrain.arcadeDrive(throttle, heading); 
 		updateRobotState();
-		//sendDriveBaseOverUDP();
+		//sendDriveBaseDataOverUDP();
 	}
 	
 	public void driveStraight(double throttle) {
@@ -119,7 +119,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 			driveTrain.arcadeDrive(helper.handleOverPower(throttle), helper.handleOverPower(theta * straightLineKPReverse)); 
 		}
 		updateRobotState();
-		//sendDriveBaseOverUDP();
+		//sendDriveBaseDataOverUDP();
 	}
 	
 	public void driveDistanceSetPID(double p, double i, double d, double maxV) {
@@ -142,7 +142,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		//System.out.println("r" + distanceControllerRate);
 		this.driveVelocity(distanceControllerRate, 0.0);//Gyro code in drive straight I think is messed up
 		updateRobotState();
-		//sendDriveBaseOverUDP();
+		//sendDriveBaseDataOverUDP();
 		
 	}
 	
@@ -168,7 +168,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		bigTurnController.setSetpoint(heading);
 		this.driveVelocity(0.0, bigTurnControllerRate);
 		updateRobotState();
-		//sendDriveBaseOverUDP();
+		//sendDriveBaseDataOverUDP();
 	}
 	
 	public void turnToSmallAngleSetPID(double p, double i, double d, double maxV) {
@@ -194,7 +194,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		smallTurnController.setSetpoint(heading);
 		this.driveVelocity(0.0, smallTurnControllerRate);
 		updateRobotState();
-		//sendDriveBaseOverUDP();
+		//sendDriveBaseDataOverUDP();
 	}
 	
 	public double getDistanceAvg() {
@@ -257,7 +257,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 			Robot.robotState = Robot.RobotState.Neither;
 	}
 	
-	private void sendDriveBaseDataOverUDP() {
+	/*private void sendDriveBaseDataOverUDP() {
 		String data = System.currentTimeMillis() + ", " + leftDriveMaster.getOutputVoltage() + ", " + rightDriveMaster.getOutputVoltage() 
 		 + ", " + getDistanceTraveledLeft() + ", " + getDistanceTraveledRight() + ", " + NavX.getYaw();
 		sendData = data.getBytes();
@@ -273,7 +273,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
+	}*/
 	
 	private double getLeftEncoderPosition() {
 		return leftDriveMaster.getEncPosition();
