@@ -42,7 +42,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 	public DriveTrain() {
 		setTalonDefaults();
 		try {
-			serverSocket = new DatagramSocket(udpPort);
+			serverSocket = new DatagramSocket(udpPortForLogging);
 		} catch (SocketException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -258,11 +258,12 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 	}
 	
 	private void sendDriveBaseDataOverUDP() {
-		String data = System.currentTimeMillis() + ", " + leftDriveMaster.getOutputVoltage() + ", " + rightDriveMaster.getOutputVoltage() 
-		 + ", " + getDistanceTraveledLeft() + ", " + getDistanceTraveledRight() + ", " + NavX.getYaw();
+		String data = "OH Hello There!";
+		//String data = System.currentTimeMillis() + ", " + leftDriveMaster.getOutputVoltage() + ", " + rightDriveMaster.getOutputVoltage() 
+		 //+ ", " + getDistanceTraveledLeft() + ", " + getDistanceTraveledRight() + ", " + NavX.getYaw();
 		sendData = data.getBytes();
 		try {
-			sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(kangarooIP), udpPort);
+			sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(kangarooIP), udpPortForLogging);
 		} catch (UnknownHostException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
