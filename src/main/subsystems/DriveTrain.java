@@ -11,6 +11,7 @@ import com.ctre.CANTalon.FeedbackDevice;
 import com.ctre.CANTalon.TalonControlMode;
 import com.kauailabs.navx.frc.AHRS;//NavX import
 import Util.DriveHelper;
+import Util.MathHelper;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
@@ -20,6 +21,7 @@ import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import lib.AutoTune;
 import main.Constants;
 import main.HardwareAdapter;
 import main.Robot;
@@ -35,14 +37,25 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 	private PIDController smallTurnController;
 	private PIDController bigTurnController;
 	private PIDController distanceController;
+	private boolean smallAngleIsStable = false, bigAngleIsStable = false, distanceIsStable = false;
+	private MathHelper smallAngleHelper, bigAngleHelper, distanceHelper, angularRateOfChangeHelper, distanceRateOfChangeHelper;
+	private double angularRateOfChange, distanceRateOfChange;
+	private double autoTuneStep = 50.0, autoTuneNoise = 1.0;
+	private int autoTuneLookBack = 20;
+	private AutoTune autoTune;
+	private double tunedSmallKP, tunedSmallKI, tunedSmallKD, tunedBigKP, tunedBigKI, tunedBigKD, 
+					tunedDistanceKP, tunedDistanceKI, tunedDistanceKD;
 	//private DatagramSocket serverSocket;
 	//private byte[] sendData;
 	//private  DatagramPacket sendPacket;
 
 	public DriveTrain() {
+		smallAngleHelper = new MathHelper();
+		bigAngleHelper = new MathHelper();
+		distanceHelper = new MathHelper();
 		setTalonDefaults();
 		//try {
-			//serverSocket = new DatagramSocket(udpPort);
+			//serverSocket = new DatagramSocket(udpPortForLogging);
 		//} catch (SocketException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
@@ -83,7 +96,7 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 			PIDSourceType m_sourceType = PIDSourceType.kDisplacement;
 
 			public double pidGet() {
-				return (Robot.dt.getDistanceTraveledRight());
+				return (getDistanceTraveledRight());
 			}
 
 			public void setPIDSourceType(PIDSourceType pidSource) {
@@ -102,14 +115,20 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 	}
 	
 	public void driveVelocity(double throttle, double heading) {
-		if(Robot.gameState == Robot.GameState.Autonomous || Robot.gameState == Robot.GameState.Teleop) 
-			driveTrain.arcadeDrive(throttle, heading); 
+		distanceRateOfChangeHelper = new MathHelper(this.getDistanceTraveledRight(), System.currentTimeMillis());
+		angularRateOfChangeHelper = new MathHelper(NavX.getYaw(), System.currentTimeMillis());
+		if(Robot.gameState == Robot.GameState.Autonomous || Robot.gameState == Robot.GameState.Teleop)
+			driveTrain.arcadeDrive(helper.handleOverPower(throttle), helper.handleOverPower(heading));
+		distanceRateOfChange = distanceRateOfChangeHelper.rateOfChange(getDistanceTraveledRight());
+		angularRateOfChangeHelper = new MathHelper(NavX.getYaw(), System.currentTimeMillis());
 		updateRobotState();
 		//sendDriveBaseDataOverUDP();
 	}
 	
 	public void driveStraight(double throttle) {
 		double theta = NavX.getYaw();
+		distanceRateOfChangeHelper = new MathHelper(this.getDistanceTraveledRight(), System.currentTimeMillis());
+		angularRateOfChangeHelper = new MathHelper(NavX.getYaw(), System.currentTimeMillis());
 		if(Math.signum(throttle) > 0) {
 			//Make this PID Controlled
 			driveTrain.arcadeDrive(helper.handleOverPower(throttle), helper.handleOverPower(theta * straightLineKP)); 
@@ -118,16 +137,26 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 			//Might be unnecessary but I think the gyro bearing changes if you drive backwards
 			driveTrain.arcadeDrive(helper.handleOverPower(throttle), helper.handleOverPower(theta * straightLineKPReverse)); 
 		}
+		distanceRateOfChange = distanceRateOfChangeHelper.rateOfChange(getDistanceTraveledRight());
+		angularRateOfChangeHelper = new MathHelper(NavX.getYaw(), System.currentTimeMillis());
 		updateRobotState();
 		//sendDriveBaseDataOverUDP();
 	}
 	
-	public void driveDistanceSetPID(double p, double i, double d, double maxV) {
+	public void driveDistanceSetPID(double p, double i, double d, double maxV, boolean tuning) {
 		distanceController.setPID(p, i, d);
 		distanceController.setOutputRange(-maxV/10, maxV/10);
+		distanceRateOfChangeHelper = new MathHelper(this.getDistanceTraveledRight(), System.currentTimeMillis());
+		if(tuning) {
+			autoTune = new AutoTune();
+			autoTune.setNoiseBand(autoTuneNoise);
+			autoTune.setOutputStep(autoTuneStep);
+			autoTune.setLookbackSec((int) autoTuneLookBack);
+
+		}
 	}
 	
-	public void driveDistance(double distance, double tolerance) {
+	public void driveDistance(double distance, double tolerance, boolean tuning) {
 		if(highGearState)
 			new ShiftDown();
 		setBrakeMode(true);
@@ -141,21 +170,45 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		distanceController.setSetpoint(distance);
 		//System.out.println("r" + distanceControllerRate);
 		this.driveVelocity(distanceControllerRate, 0.0);//Gyro code in drive straight I think is messed up
+		distanceIsStable = distanceHelper.isStable(distance, getDistanceTraveledRight(), tolerance);
+		distanceRateOfChange = distanceRateOfChangeHelper.rateOfChange(getDistanceTraveledRight());
+		if(tuning) {
+			if (autoTune.runtime((double) Robot.dt.getDistanceTraveledRight(), distanceControllerRate)) {
+				autoTune.cancel();
+				tunedDistanceKP = autoTune.getKp();
+				tunedDistanceKI = autoTune.getKi();
+				tunedDistanceKD = autoTune.getKd();
+			}
+		}
 		updateRobotState();
 		//sendDriveBaseDataOverUDP();
 		
 	}
 	
-	public void turnToBigAngleSetPID(double p, double i, double d, double maxV) {
+	@SuppressWarnings("deprecation")
+	public void turnToBigAngleSetPIDMinVoltage(double minV) {
+		SmartDashboard.putDouble("Turning MinVoltage Big Angle", minV);
+
+	}
+	
+	public void turnToBigAngleSetPID(double p, double i, double d, double maxV, boolean tuning) {
 		@SuppressWarnings("deprecation")
-		double minVoltage = 5.5;//SmartDashboard.getDouble("Turning MinVoltage Big Angle", 0.0);
+		double minVoltage = SmartDashboard.getDouble("Turning MinVoltage Big Angle", 0.0);
 		maxV = 10.5;
 		bigTurnController.setPID(p, i, d);
 		System.out.println(-(maxV-minVoltage)/10 + " " + (maxV-minVoltage)/10);
 		bigTurnController.setOutputRange(-(maxV-minVoltage)/10, (maxV-minVoltage)/10);
+		angularRateOfChangeHelper = new MathHelper(NavX.getYaw(), System.currentTimeMillis());
+		if(tuning) {
+			autoTune = new AutoTune();
+			autoTune.setNoiseBand(autoTuneNoise);
+			autoTune.setOutputStep(autoTuneStep);
+			autoTune.setLookbackSec((int) autoTuneLookBack);
+
+		}
 	}
 	
-	public void turnToBigAngle(double heading, double tolerance) {
+	public void turnToBigAngle(double heading, double tolerance, boolean tuning) {
 		if(highGearState)
 			new ShiftDown();
 		setBrakeMode(true);
@@ -167,21 +220,44 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		bigTurnController.enable();
 		bigTurnController.setSetpoint(heading);
 		this.driveVelocity(0.0, bigTurnControllerRate);
+		bigAngleIsStable = bigAngleHelper.isStable(heading, NavX.getYaw(), tolerance);
+		angularRateOfChange = angularRateOfChangeHelper.rateOfChange(NavX.getYaw());
+		if(tuning) {
+			if (autoTune.runtime((double) Robot.dt.getGyro().getYaw(), bigTurnControllerRate)) {
+				autoTune.cancel();
+				tunedBigKP = autoTune.getKp();
+				tunedBigKI = autoTune.getKi();
+				tunedBigKD = autoTune.getKd();
+			}
+		}
 		updateRobotState();
 		//sendDriveBaseDataOverUDP();
 	}
 	
-	public void turnToSmallAngleSetPID(double p, double i, double d, double maxV) {
+	@SuppressWarnings("deprecation")
+	public void turnToSmallAngleSetPIDMinVoltage(double minV) {
+		SmartDashboard.putDouble("Turning MinVoltage Small Angle", minV);
+	}
+	
+	public void turnToSmallAngleSetPID(double p, double i, double d, double maxV, boolean tuning) {
 		@SuppressWarnings("deprecation")
-		double minVoltage = 5.5;//SmartDashboard.getDouble("Turning MinVoltage Small Angle", 0.0);
+		double minVoltage = SmartDashboard.getDouble("Turning MinVoltage Small Angle", 0.0);
 		maxV = 9.0;
 		smallTurnController.setPID(p, i, d);
 		System.out.println(-(maxV-minVoltage)/10 + " " + (maxV-minVoltage)/10);
-
 		smallTurnController.setOutputRange(-(maxV-minVoltage)/10, (maxV-minVoltage)/10);
+		angularRateOfChangeHelper = new MathHelper(NavX.getYaw(), System.currentTimeMillis());
+		if(tuning) {
+			autoTune = new AutoTune();
+			autoTune.setNoiseBand(autoTuneNoise);
+			autoTune.setOutputStep(autoTuneStep);
+			autoTune.setLookbackSec((int) autoTuneLookBack);
+
+		}
+
 	}
 	
-	public void turnToSmallAngle(double heading, double tolerance) {
+	public void turnToSmallAngle(double heading, double tolerance, boolean tuning) {
 		if(highGearState)
 			new ShiftDown();
 		setBrakeMode(true);
@@ -193,6 +269,16 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		smallTurnController.enable();
 		smallTurnController.setSetpoint(heading);
 		this.driveVelocity(0.0, smallTurnControllerRate);
+		smallAngleIsStable = smallAngleHelper.isStable(heading, NavX.getYaw(), tolerance);
+		angularRateOfChange = angularRateOfChangeHelper.rateOfChange(NavX.getYaw());
+		if(tuning) {
+			if (autoTune.runtime((double) Robot.dt.getGyro().getYaw(), smallTurnControllerRate)) {
+				autoTune.cancel();
+				tunedSmallKP = autoTune.getKp();
+				tunedSmallKI = autoTune.getKi();
+				tunedSmallKD = autoTune.getKd();
+			}
+		}
 		updateRobotState();
 		//sendDriveBaseDataOverUDP();
 	}
@@ -209,6 +295,74 @@ public class DriveTrain extends Subsystem implements Constants, HardwareAdapter 
 		return NavX;
 	}
 	
+	public double getSmallAnglePIDControllerRate() {
+		return smallTurnControllerRate;
+	}
+	
+	public double getBigAnglePIDControllerRate() {
+		return bigTurnControllerRate;
+	}
+	
+	public double getDistancePIDControllerRate() {
+		return distanceControllerRate;
+	}
+	
+	public boolean getSmallAngleIsStable() {
+		return smallAngleIsStable;
+	}
+	
+	public boolean getBigAngleIsStable() {
+		return bigAngleIsStable;
+	}
+	
+	public boolean getDistanceIsStable() {
+		return distanceIsStable;
+	}
+	
+	public double getAngularRateOfChange() {
+		return angularRateOfChange;
+	}
+	
+	public double getDistanceRateOfChange() {
+		return distanceRateOfChange;
+	}
+	
+	public double getTunedSmallAngleKP() {
+		return tunedSmallKP;
+	}
+
+	public double getTunedSmallAngleKI() {
+		return tunedSmallKI;
+	}
+
+	public double getTunedSmallAngleKD() {
+		return tunedSmallKD;
+	}
+
+	public double getTunedBigAngleKP() {
+		return tunedBigKP;
+	}
+
+	public double getTunedBigAngleKI() {
+		return tunedBigKI;
+	}
+
+	public double getTunedBigAngleKD() {
+		return tunedBigKD;
+	}
+	
+	public double getTunedDistanceKP() {
+		return tunedDistanceKP;
+	}
+	
+	public double getTunedDistanceKI() {
+		return tunedDistanceKI;
+	}
+	
+	public double getTunedDistanceKD() {
+		return tunedDistanceKD;
+	}
+
 	public int convertToEncoderTicks(double displacement) {//ft
 		return (int) (((displacement / (wheelSize*Math.PI)) * conversionFactor));
 	}

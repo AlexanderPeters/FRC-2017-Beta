@@ -1,11 +1,11 @@
 package main.commands.drivetrain;
 
-import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.command.TimedCommand;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import main.Constants;
 import main.Robot;
 
-public class TurnToAngle extends Command implements Constants {
+public class TimedTurnToAngle extends TimedCommand implements Constants {
 	private boolean bigAngle;
 	private double heading;
 	private double tolerance;
@@ -17,7 +17,8 @@ public class TurnToAngle extends Command implements Constants {
 	//@param heading: the desired angle to go to (+ or - (right turn, left turn; respectively)), tolerance: the absolute difference allowable 
 	
 	@SuppressWarnings("deprecation")
-	public TurnToAngle(double heading, double tolerance, double maxV, double KP, double KI, double KD, boolean tuning) {
+	public TimedTurnToAngle(double heading, double tolerance, double maxV, double KP, double KI, double KD, boolean tuning, double time) {
+    	super(time);
     	requires(Robot.dt);
     	this.heading = heading;
     	this.tolerance = tolerance;
@@ -30,7 +31,8 @@ public class TurnToAngle extends Command implements Constants {
     	bigAngle = (Math.abs(heading) > switchAngle ? true:false);
 	}
 	@SuppressWarnings("deprecation")
-	public TurnToAngle(double heading, double tolerance, double maxV, boolean tuning) {
+	public TimedTurnToAngle(double heading, double tolerance, double maxV, boolean tuning, double time) {
+    	super(time);
     	requires(Robot.dt);
     	this.heading = heading;
     	this.tolerance = tolerance;
@@ -45,7 +47,8 @@ public class TurnToAngle extends Command implements Constants {
     	
     }
     @SuppressWarnings("deprecation")
-	public TurnToAngle(double heading, double tolerance, boolean tuning) {
+	public TimedTurnToAngle(double heading, double tolerance, boolean tuning, double time) {
+    	super(time);
     	requires(Robot.dt);
     	this.heading = heading;
     	this.tolerance = tolerance;
@@ -60,7 +63,8 @@ public class TurnToAngle extends Command implements Constants {
     }
     
     @SuppressWarnings("deprecation")
-	public TurnToAngle(double heading, boolean tuning) {
+	public TimedTurnToAngle(double heading, boolean tuning, double time) {
+    	super(time);
     	requires(Robot.dt);
     	this.heading = heading;
     	this.tuning = tuning;
@@ -76,11 +80,11 @@ public class TurnToAngle extends Command implements Constants {
 
     // Called just before this Command runs the first time
     protected void initialize() {
-    	Robot.dt.resetGyro();
     	if(bigAngle)
     		Robot.dt.turnToBigAngleSetPID(KP, KI, KD, maxV, tuning);
     	else
     		Robot.dt.turnToSmallAngleSetPID(KP, KI, KD, maxV, tuning);
+    	Robot.dt.resetGyro();
     }
 
     // Called repeatedly when this Command is scheduled to run

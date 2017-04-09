@@ -8,6 +8,7 @@ import main.commands.drivetrain.Drive;
 import main.commands.drivetrain.DriveDistance;
 import main.commands.drivetrain.DrivePercentage;
 import main.commands.drivetrain.Target;
+import main.commands.drivetrain.TuneDriveTrain;
 import main.commands.drivetrain.TurnToAngle;
 import main.commands.gearmech.GearDown;
 import main.commands.gearmech.GearUp;
@@ -42,17 +43,17 @@ public class OI implements Constants, HardwareAdapter {
 		xbox.leftBumper.whenReleased(new ShiftDown());
 		xbox.rightBumper.whenPressed(new GearDown());
 		xbox.rightBumper.whenReleased(new GearUp());
-		xbox.start.whenPressed(new TurnToAngle(-45));
+		//xbox.leftTrigger.whenPressed(new TuneDriveTrain());
 		//xbox.start.whenPressed(new Target());
 		//xbox.select.whenPressed(new TurnToAngle(-3));
 		//xbox.select.whenReleased(new TurnToAngle(20));
 		
 		//xbox.leftTrigger.whenPressed(new TurnToAngle(mmm));
-		xbox.select.whenPressed(new DriveDistance(3, kToleranceDisplacementDefault));
-		double throttle = SmartDashboard.getDouble("Throttle Voltage", 0.0);
+		//xbox.select.whenPressed(new DriveDistance(3, kToleranceDisplacementDefault, false));
+		/*double throttle = SmartDashboard.getDouble("Throttle Voltage", 0.0);
 		double bearing = SmartDashboard.getDouble("Bearing Voltage", 0.0);
 		xbox.leftTrigger.whileHeld(new DrivePercentage(throttle, bearing));
-		xbox.leftTrigger.whenReleased(new DrivePercentage(0.0, 0.0));
+		xbox.leftTrigger.whenReleased(new DrivePercentage(0.0, 0.0));*/
 		//xbox.leftTrigger.whenPressed(new Target());
 		
 		xbox.a.whileHeld(new IntakeForward());

@@ -22,7 +22,7 @@ public class DriveToGoal extends Command implements Constants {
 
 	// Called just before this Command runs the first time
 	protected void initialize() {
-		Robot.dt.driveDistanceSetPID(KP, KI, KD, maxV);
+		Robot.dt.driveDistanceSetPID(KP, KI, KD, maxV, false);
 		Robot.dt.resetSensors();
 	}
 
@@ -32,7 +32,7 @@ public class DriveToGoal extends Command implements Constants {
 		if(range >= 0) {
 			this.distance = -((range*Math.cos(cameraAngle * Math.PI/180)) - desiredDistanceToGoal);//Drive negated
 			System.out.println("Driving To" + distance);
-			Robot.dt.driveDistance(distance, tolerance);
+			Robot.dt.driveDistance(distance, tolerance, false);
 		}
 		else {
 			System.out.println("Drive To Target Called With ILLEGAL RANGE !!!!");

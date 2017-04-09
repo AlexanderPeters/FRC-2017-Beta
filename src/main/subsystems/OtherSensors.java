@@ -21,7 +21,6 @@ public class OtherSensors extends Subsystem implements Constants, HardwareAdapte
 	}
 	
 	public void check() {
-		System.out.println("Here");
 		gearSwitchCheck();
 		intakeSwitchCheck();
 		shootProxSwitchCheck();
@@ -29,7 +28,7 @@ public class OtherSensors extends Subsystem implements Constants, HardwareAdapte
 	
 	private void gearSwitchCheck() {
 		gearSwitchCurrentState = gearSwitch.get();
-		System.out.println(gearSwitchCurrentState);
+		//System.out.println(gearSwitchCurrentState);
 		alertDriverButton.setPressed(gearSwitchCurrentState != gearSwitchLastState);
 		alertDriverButton.whenPressed(new AlertDriver());
 		gearSwitchLastState = gearSwitchCurrentState;

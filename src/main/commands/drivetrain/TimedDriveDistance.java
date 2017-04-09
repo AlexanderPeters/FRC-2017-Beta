@@ -1,20 +1,20 @@
 package main.commands.drivetrain;
 
-import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.command.TimedCommand;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import main.Robot;
 
-public class DriveDistance extends Command {
+public class TimedDriveDistance extends TimedCommand {
 
 	private double distance;
 	private double tolerance;
 	private double KP, KI, KD, maxV;
-	private boolean tuning = false;
+	private boolean tuning;
 	
 	//@param distance: the desired distance to go travel (+ or - (forward, backward; respectively)), tolerance: the absolute difference allowable 
-	@SuppressWarnings("deprecation")
-	public DriveDistance(double distance, double tolerance, double maxV, double KP, double KI, double KD, boolean tuning) {
-    	requires(Robot.dt);
+	public TimedDriveDistance(double distance, double tolerance, double maxV, double KP, double KI, double KD, boolean tuning, double time) {
+    	super(time);
+		requires(Robot.dt);
     	this.distance = distance;
     	this.tolerance = tolerance;
     	this.maxV = maxV;
@@ -24,7 +24,8 @@ public class DriveDistance extends Command {
     	this.tuning = tuning;
 	}
 	@SuppressWarnings("deprecation")
-	public DriveDistance(double distance, double tolerance, double maxV, boolean tuning) {//feet, feet
+	public TimedDriveDistance(double distance, double tolerance, double maxV, boolean tuning, double time) {//feet, feet
+    	super(time);
     	requires(Robot.dt);
     	this.distance = -distance;
     	this.tolerance = tolerance;
@@ -36,7 +37,8 @@ public class DriveDistance extends Command {
 
     }
     @SuppressWarnings("deprecation")
-   	public DriveDistance(double distance, double tolerance, boolean tuning) {//feet, feet
+   	public TimedDriveDistance(double distance, double tolerance, boolean tuning, double time) {//feet, feet
+    	super(time);
        	requires(Robot.dt);
        	this.distance = -distance;
        	this.tolerance = tolerance;
@@ -48,7 +50,8 @@ public class DriveDistance extends Command {
 
     }
     @SuppressWarnings("deprecation")
-	public DriveDistance(double distance, boolean tuning) {//feet
+	public TimedDriveDistance(double distance, boolean tuning, double time) {//feet
+    	super(time);
     	requires(Robot.dt);
     	this.distance = -distance;
     	this.tuning = tuning;

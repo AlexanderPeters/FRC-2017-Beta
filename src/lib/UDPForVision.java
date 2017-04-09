@@ -17,7 +17,7 @@ public class UDPForVision implements Constants {
 
 	public UDPForVision() {
 		try {
-			serverSocket = new DatagramSocket(udpPort);
+			serverSocket = new DatagramSocket(udpPortForVision);
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}

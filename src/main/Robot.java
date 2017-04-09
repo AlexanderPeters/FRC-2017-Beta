@@ -85,7 +85,7 @@ public class Robot extends IterativeRobot implements Constants{
 		oi = new OI();
 
 		//mEnabledLooper.register(new UDPController());
-		mLooper1.register(new UDPController());
+		//mLooper1.register(new UDPController());
 		//mLooper1.register(new StateCheckController());
 		mLooper1.start();
     
